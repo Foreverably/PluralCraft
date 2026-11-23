@@ -13,16 +13,31 @@
 PluralCraft connects Minecraft: Java Edition to PluralBuddy so any DID/OSDD system can be
 represented by the alter who is fronting while playing.
 
-## Project status
+## System Linking & Chat Proxying
 
-> This repository currently contains the base Fabric mod for Minecraft **26.3**.
-It loads on both clients and dedicated servers. When a server has PluralCraft,
-it requires connecting clients to have the mod too and disconnects clients that
-don't have PluralCraft's networking channel.
+In game, run
+`/pluralcraft link` to open the PluralBuddy authorization page and allow PluralCraft to fetch the linked system's
+auto-proxy
+settings and alter list, including per-alter proxy tags.
 
-The PluralBuddy API integration and in-game fronting features are _not
-implemented yet_. There are no commands, configuration options, or API
-credentials to set up at this stage.
+The client applies the linked system's alter, latch, and off auto-proxy modes as well as per-alter prefix or suffix
+proxy
+tags (which are stripped upon sending) and
+shares active presence with servers and connected modded clients. When sending messages on a client / server with
+PluralCraft, chat is
+decorated as
+`<Username> [Alter Name] <message>`.
+
+Use `/pluralcraft status` to check fronting, `/pluralcraft alters` to list all
+alters and proxy tags, `/pluralcraft refresh` to update fetched data immediately, and
+`/pluralcraft ap` to inspect the resolved auto-proxy mode, and `/pluralcraft unlink` to clear the link.
+
+> [!WARNING]
+> The client stores OAuth tokens and a linked-system snapshot in
+> `config/pluralcraft/link.json` so it can restore the link after a client or world
+> restart. This includes the access token and refresh token in plaintext, along
+> with alter and auto-proxy data. Protect your Minecraft profile directory and
+> use `/pluralcraft unlink` to remove it.
 
 ## Requirements
 
@@ -39,8 +54,9 @@ credentials to set up at this stage.
 3. Start the server and connect using a Fabric 26.3 client.
 
 The PluralCraft mod JAR is the same on client and server. Clients can use the
-mod when joining a server that does not have PluralCraft; servers with
-PluralCraft require the client mod.
+mod when joining a server that does not have PluralCraft. Servers with
+PluralCraft require the client mod; therefore, joining a server that runs PluralCraft requires the client mod to be
+present.
 
 ## Building from source
 
@@ -51,7 +67,7 @@ Use Java 25 or newer. From the repository root, run:
 ```
 
 On macOS or Linux, run `sh ./gradlew build`. The distributable JAR is written to
-`build/libs/pluralcraft-0.1.0.jar`.
+`build/libs/pluralcraft-1.0.0-alpha-r1.jar`.
 
 Fabric Loom also provides development launch tasks:
 
@@ -62,12 +78,16 @@ Fabric Loom also provides development launch tasks:
 
 ## Privacy and support
 
-PluralCraft is intended to connect to PluralBuddy's API in a future version.
-API access, permissions, and handling of any credentials will be documented
-before that integration is released. Do not post private system information,
-access tokens, or unredacted logs in public issues or support channels.
+PluralCraft connects to PluralBuddy's API and sends active alter presence to
+Minecraft servers running the mod. Alter names and IDs may also be shared with
+connected clients running PluralCraft.
 
-For help, visit the [support Discord](https://discord.gg/QvvCW7YSR7). Please use
+The mod stores OAuth tokens and system, alter, proxy-tag, and auto-proxy data
+in `config/pluralcraft/link.json` so the link survives game restarts. Information
+handled by PluralBuddy is governed by
+[PluralBuddy's Privacy Policy](https://pluralbuddy.app/docs/policies/privacy).
+
+For help regarding PluralCraft, visit the [support Discord](https://discord.gg/QvvCW7YSR7). Please use
 the repository's issue tracker for reproducible bugs and feature requests.
 
 ## Contributing
