@@ -5,22 +5,23 @@
 <h1 align="center">PluralCraft</h1>
 
 <p align="center">
-  <strong>A Minecraft mod made with systems in mind.</strong> • <a href="https://pluralcraft.forwynn.net/">Website</a> • <a href="https://discord.gg/QvvCW7YSR7">Support Discord</a>
+  <strong>A Minecraft mod made with systems in mind</strong>
+   <br>
+   <a href="https://pluralcraft.forwynn.net/">Website</a> • <a href="https://discord.gg/QvvCW7YSR7">Support Discord</a>
 </p>
 
-PluralCraft connects Minecraft: Java Edition to PluralBuddy so a system can be
-represented by the alter who is fronting. It is being made for systems with DID
-and OSDD, with care for the people behind the screen.
+PluralCraft connects Minecraft: Java Edition to PluralBuddy so any DID/OSDD system can be
+represented by the alter who is fronting while playing.
 
 ## Project status
 
-This repository currently contains the base Fabric mod for Minecraft **26.3**.
+> This repository currently contains the base Fabric mod for Minecraft **26.3**.
 It loads on both clients and dedicated servers. When a server has PluralCraft,
 it requires connecting clients to have the mod too and disconnects clients that
-do not advertise PluralCraft's networking channel.
+don't have PluralCraft's networking channel.
 
-The PluralBuddy API integration and in-game fronting features are **not
-implemented yet**. There are no commands, configuration options, or API
+The PluralBuddy API integration and in-game fronting features are _not
+implemented yet_. There are no commands, configuration options, or API
 credentials to set up at this stage.
 
 ## Requirements
