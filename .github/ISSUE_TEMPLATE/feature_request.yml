@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest an improvement to PluralCraft.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please focus on the Minecraft use case. You do not need to share diagnoses, system structure, or personal account information.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Client experience
+        - Server setup or administration
+        - PluralBuddy integration
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to be easier or possible?
+      description: Describe the problem or use case this would address.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Share a possible solution, if you have one.
+    validations:
+      required: true
+  - type: textarea
+    id: considerations
+    attributes:
+      label: Compatibility, privacy, or accessibility considerations
+      description: Optional. Do not include private personal, system, or account details.
+    validations:
+      required: false
