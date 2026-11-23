@@ -1,3 +1,6 @@
+# Created by https://mrkandreev.name/snippets/gitignore-generator/#Java,Web,Gradle,Maven,Intellij,VisualStudio,VisualStudioCode
+# Edit at https://mrkandreev.name/snippets/gitignore-generator/#Java,Web,Gradle,Maven,Intellij,VisualStudio,VisualStudioCode
+
 ### Java ###
 # Compiled class file
 *.class

@@ -25,6 +25,8 @@ available.
 
 For substantial feature proposals, open an issue or discuss the idea in the
 [support Discord](https://discord.gg/QvvCW7YSR7) before doing extensive work.
+The current mod is an early foundation; API integration and fronting features
+are not implemented yet.
 
 ## Pull requests
 
@@ -39,8 +41,7 @@ For substantial feature proposals, open an issue or discuss the idea in the
   build output.
 
 Use the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) and follow
-the [commit message convention](docs/commit-messages.md). Additionally, the code style uses
-the [Allman Java style](docs/xml/README.md).
+the [commit message convention](docs/commit-messages.md).
 
 By submitting a contribution, you agree that it may be distributed under the
 repository's [GPL-3.0-or-later license](LICENSE). No separate contributor
