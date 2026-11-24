@@ -20,6 +20,14 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	include(implementation("com.github.javakeyring:java-keyring:1.0.4"))
+	include(implementation("de.swiesend:secret-service:1.8.1-jdk17"))
+	include(implementation("at.favre.lib:hkdf:1.1.0"))
+	include(implementation("com.github.hypfvieh:dbus-java-core:4.2.1"))
+	include(implementation("com.github.hypfvieh:dbus-java-transport-native-unixsocket:4.2.1"))
+	include(implementation("net.java.dev.jna:jna:5.17.0"))
+	include(implementation("net.java.dev.jna:jna-platform:5.17.0"))
+	include(implementation("pt.davidafsilva.apple:jkeychain:1.1.0"))
 }
 
 processResources {
