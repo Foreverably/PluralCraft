@@ -36,6 +36,10 @@ final class PluralCraftClientLink
 	private static final PluralCraftOAuthClient OAUTH_CLIENT = new PluralCraftOAuthClient();
 	private static final PluralBuddyApiClient API_CLIENT = new PluralBuddyApiClient();
 	private static final AtomicBoolean LINK_IN_PROGRESS = new AtomicBoolean();
+	private static String persistedRefreshToken;
+	private static boolean credentialStoreContainsToken;
+	private static boolean credentialStoreUnavailable;
+	private static boolean snapshotPersisted;
 
 	private PluralCraftClientLink()
 	{
@@ -55,6 +59,7 @@ final class PluralCraftClientLink
 		}
 
 		PluralCraftClient.sessionTokens = null;
+		credentialStoreUnavailable = false;
 		source.sendFeedback(
 				Component.literal("PluralCraft ")
 						.withStyle(ChatFormatting.DARK_AQUA)
@@ -128,6 +133,13 @@ final class PluralCraftClientLink
 									.append(Component.literal(" auto-proxy settings.")
 											.withStyle(ChatFormatting.GRAY))
 					);
+					if (!hasPersistedRefreshToken())
+					{
+						source.sendError(Component.literal(
+								"The link is active for this session, but secure token storage or snapshot "
+										+ "persistence failed. It may not be restored after a restart."
+						));
+					}
 				}));
 	}
 
@@ -240,11 +252,12 @@ final class PluralCraftClientLink
 		}
 
 		return OAUTH_CLIENT.refresh(tokens.refreshToken()).thenApply(refreshed -> {
-			PluralCraftClient.sessionTokens = refreshed;
+			PluralCraftOAuthClient.Tokens currentTokens = retainRefreshToken(refreshed, tokens.refreshToken());
+			PluralCraftClient.sessionTokens = currentTokens;
 			PluralCraftClient.accessExpiresAtMillis = System.currentTimeMillis()
-					+ TimeUnit.SECONDS.toMillis(refreshed.expiresIn());
+					+ TimeUnit.SECONDS.toMillis(currentTokens.expiresIn());
 			persistLink();
-			return refreshed;
+			return currentTokens;
 		});
 	}
 
@@ -286,19 +299,52 @@ final class PluralCraftClientLink
 				.resolve("link.json");
 	}
 
-	static void persistLink()
+	private static Path persistedLinkTemporaryPath()
 	{
-		if (PluralCraftClient.sessionTokens == null)
+		Path path = persistedLinkPath();
+		return path.resolveSibling(path.getFileName() + ".tmp");
+	}
+
+	static synchronized void persistLink()
+	{
+		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		if (tokens == null)
 		{
 			return;
 		}
 
+		String refreshToken = tokens.refreshToken();
+		if (refreshToken != null
+				&& !refreshToken.isBlank()
+				&& !refreshToken.equals(persistedRefreshToken)
+				&& !credentialStoreUnavailable)
+		{
+			try
+			{
+				PluralCraftCredentialStore.saveRefreshToken(refreshToken);
+				persistedRefreshToken = refreshToken;
+				credentialStoreContainsToken = true;
+			}
+			catch (PluralCraftCredentialStore.CredentialStoreException exception)
+			{
+				credentialStoreUnavailable = true;
+				LOGGER.warn("Could not save the PluralCraft refresh token to the OS credential store. "
+						+ "The link will not be restored after a restart.", exception);
+			}
+		}
+
+		boolean tokenStored = refreshToken != null
+				&& refreshToken.equals(persistedRefreshToken)
+				&& credentialStoreContainsToken;
+		snapshotPersisted = writePersistedSnapshot(tokenStored);
+	}
+
+	private static boolean writePersistedSnapshot(boolean tokenStored)
+	{
 		try
 		{
 			JsonObject root = new JsonObject();
-			root.addProperty("access_token", PluralCraftClient.sessionTokens.accessToken());
-			root.addProperty("refresh_token", PluralCraftClient.sessionTokens.refreshToken());
-			root.addProperty("expires_at_millis", PluralCraftClient.accessExpiresAtMillis);
+			root.addProperty("credential_store", tokenStored);
 			root.addProperty("latched_alter_id", PluralCraftClient.latchedAlterId);
 
 			JsonArray autoproxy = createAutoproxy();
@@ -327,15 +373,52 @@ final class PluralCraftClientLink
 
 			Path path = persistedLinkPath();
 			Files.createDirectories(path.getParent());
-			Path temporary = path.resolveSibling(path.getFileName() + ".tmp");
+			Path temporary = persistedLinkTemporaryPath();
 			Files.writeString(temporary, root.toString(), StandardCharsets.UTF_8);
 			Files.move(temporary, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
 					java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+			return true;
 		}
 		catch (IOException | SecurityException | UnsupportedOperationException exception)
 		{
-			LOGGER.warn("Could not persist the PluralCraft PluralBuddy link.");
+			LOGGER.warn("Could not persist the PluralCraft link snapshot.", exception);
+			return false;
 		}
+		finally
+		{
+			try
+			{
+				Files.deleteIfExists(persistedLinkTemporaryPath());
+			}
+			catch (IOException | SecurityException exception)
+			{
+				LOGGER.warn("Could not remove the temporary PluralCraft link snapshot.", exception);
+			}
+		}
+	}
+
+	private static PluralCraftOAuthClient.Tokens retainRefreshToken(
+			PluralCraftOAuthClient.Tokens refreshed,
+			String previousRefreshToken
+	)
+	{
+		return refreshed.refreshToken() == null || refreshed.refreshToken().isBlank()
+				? new PluralCraftOAuthClient.Tokens(
+						refreshed.accessToken(),
+						refreshed.expiresIn(),
+						previousRefreshToken
+				)
+				: refreshed;
+	}
+
+	static synchronized boolean hasPersistedRefreshToken()
+	{
+		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		return credentialStoreContainsToken
+				&& snapshotPersisted
+				&& tokens != null
+				&& tokens.refreshToken() != null
+				&& tokens.refreshToken().equals(persistedRefreshToken);
 	}
 
 	private static @NonNull JsonArray createAutoproxy()
@@ -353,21 +436,51 @@ final class PluralCraftClientLink
 		return autoproxy;
 	}
 
-	static void deletePersistedLink()
+	static synchronized boolean deletePersistedLink()
 	{
+		boolean removed = true;
 		try
 		{
 			Files.deleteIfExists(persistedLinkPath());
+			Files.deleteIfExists(persistedLinkTemporaryPath());
+			snapshotPersisted = false;
 		}
 		catch (IOException | SecurityException exception)
 		{
-			LOGGER.warn("Could not remove the persisted PluralCraft link.");
+			LOGGER.warn("Could not remove the persisted PluralCraft link snapshot.", exception);
+			removed = false;
 		}
+
+		if (credentialStoreContainsToken)
+		{
+			try
+			{
+				PluralCraftCredentialStore.deleteRefreshToken();
+				persistedRefreshToken = null;
+				credentialStoreContainsToken = false;
+			}
+			catch (PluralCraftCredentialStore.CredentialStoreException exception)
+			{
+				LOGGER.warn("Could not remove the PluralCraft refresh token from the OS credential store.",
+						exception);
+				removed = false;
+			}
+		}
+		return removed;
 	}
 
-	static void loadPersistedLink()
+	static synchronized void loadPersistedLink()
 	{
 		Path path = persistedLinkPath();
+		try
+		{
+			Files.deleteIfExists(persistedLinkTemporaryPath());
+		}
+		catch (IOException | SecurityException exception)
+		{
+			LOGGER.warn("Could not remove a temporary PluralCraft link snapshot.", exception);
+		}
+
 		if (!Files.isRegularFile(path))
 		{
 			return;
@@ -379,7 +492,7 @@ final class PluralCraftClientLink
 					Files.readString(path, StandardCharsets.UTF_8)
 			).getAsJsonObject();
 			String accessToken = optionalPersistedString(root, "access_token");
-			String refreshToken = optionalPersistedString(root, "refresh_token");
+			String legacyRefreshToken = optionalPersistedString(root, "refresh_token");
 			JsonElement expiresElement = root.get("expires_at_millis");
 			PluralCraftClient.accessExpiresAtMillis = expiresElement != null && expiresElement.isJsonPrimitive()
 					&& expiresElement.getAsJsonPrimitive().isNumber()
@@ -389,6 +502,12 @@ final class PluralCraftClientLink
 
 			PluralCraftClient.linkedAutoproxy = parsePersistedAutoproxy(root);
 			PluralCraftClient.linkedAlters = parsePersistedAlters(root);
+			snapshotPersisted = true;
+
+			if (legacyRefreshToken != null)
+			{
+				saveMigratedRefreshToken(legacyRefreshToken);
+			}
 
 			if (accessToken != null
 					&& !accessToken.isBlank()
@@ -398,34 +517,85 @@ final class PluralCraftClientLink
 						accessToken,
 						(int) Math.max(1,
 								(PluralCraftClient.accessExpiresAtMillis - System.currentTimeMillis()) / 1000),
-						refreshToken
+						legacyRefreshToken
 				);
+				persistLink();
 				restorePersistedLink();
 				return;
 			}
 
-			if (refreshToken != null && !refreshToken.isBlank())
+			if (legacyRefreshToken != null)
 			{
-				OAUTH_CLIENT.refresh(refreshToken).whenComplete((tokens, error) -> {
-					if (error != null)
-					{
-						LOGGER.warn("Could not refresh the persisted PluralCraft link.");
-						PluralCraftClient.sessionTokens = null;
-						return;
-					}
-
-					PluralCraftClient.sessionTokens = tokens;
-					PluralCraftClient.accessExpiresAtMillis = System.currentTimeMillis()
-							+ TimeUnit.SECONDS.toMillis(tokens.expiresIn());
-					persistLink();
-					restorePersistedLink();
-				});
+				snapshotPersisted = writePersistedSnapshot(credentialStoreContainsToken);
+				refreshAndRestore(legacyRefreshToken);
+				return;
 			}
+
+			if (root.has("credential_store")
+					&& root.get("credential_store").isJsonPrimitive()
+					&& root.getAsJsonPrimitive("credential_store").getAsBoolean())
+			{
+				credentialStoreContainsToken = true;
+				String refreshToken = PluralCraftCredentialStore.readRefreshToken();
+				if (refreshToken == null || refreshToken.isBlank())
+				{
+					throw new IllegalStateException("The OS credential store returned an empty refresh token.");
+				}
+				persistedRefreshToken = refreshToken;
+				refreshAndRestore(refreshToken);
+			}
+			if (accessToken != null)
+			{
+				snapshotPersisted = writePersistedSnapshot(credentialStoreContainsToken);
+			}
+		}
+		catch (PluralCraftCredentialStore.CredentialStoreException exception)
+		{
+			credentialStoreUnavailable = true;
+			LOGGER.warn("Could not read the PluralCraft refresh token from the OS credential store. "
+					+ "Use /pluralcraft link to connect again.", exception);
 		}
 		catch (RuntimeException | IOException exception)
 		{
-			LOGGER.warn("Could not read the persisted PluralCraft link.");
+			LOGGER.warn("Could not read the persisted PluralCraft link snapshot.", exception);
 		}
+	}
+
+	private static void saveMigratedRefreshToken(String refreshToken)
+	{
+		try
+		{
+			PluralCraftCredentialStore.saveRefreshToken(refreshToken);
+			persistedRefreshToken = refreshToken;
+			credentialStoreContainsToken = true;
+		}
+		catch (PluralCraftCredentialStore.CredentialStoreException exception)
+		{
+			credentialStoreUnavailable = true;
+			credentialStoreContainsToken = false;
+			LOGGER.warn("Could not migrate the legacy plaintext refresh token to the OS credential store. "
+					+ "The token will be removed from the link snapshot and the link will not survive a restart.",
+					exception);
+		}
+	}
+
+	private static void refreshAndRestore(String refreshToken)
+	{
+		OAUTH_CLIENT.refresh(refreshToken).whenComplete((tokens, error) -> {
+			if (error != null)
+			{
+				LOGGER.warn("Could not refresh the persisted PluralCraft link.");
+				PluralCraftClient.sessionTokens = null;
+				return;
+			}
+
+			PluralCraftOAuthClient.Tokens currentTokens = retainRefreshToken(tokens, refreshToken);
+			PluralCraftClient.sessionTokens = currentTokens;
+			PluralCraftClient.accessExpiresAtMillis = System.currentTimeMillis()
+					+ TimeUnit.SECONDS.toMillis(currentTokens.expiresIn());
+			persistLink();
+			restorePersistedLink();
+		});
 	}
 
 	private static String optionalPersistedString(JsonObject object, String field)

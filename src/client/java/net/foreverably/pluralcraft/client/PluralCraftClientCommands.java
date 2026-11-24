@@ -96,15 +96,20 @@ final class PluralCraftClientCommands
 		PluralCraftClient.linkedAutoproxy = List.of();
 		PluralCraftClient.latchedAlterId = null;
 		PluralCraftClient.accessExpiresAtMillis = 0;
-		PluralCraftClientLink.deletePersistedLink();
+		boolean storageCleared = PluralCraftClientLink.deletePersistedLink();
 		PluralCraftClient.sendPresence(null);
-		source.sendFeedback(
-				Component.literal("PluralCraft ")
-						.withStyle(ChatFormatting.DARK_AQUA)
-						.append(Component.literal("has been unlinked")
-								.withStyle(ChatFormatting.YELLOW))
-						.append(Component.literal(" from PluralBuddy.")
-								.withStyle(ChatFormatting.GRAY))
-		);
+		Component message = Component.literal("PluralCraft ")
+				.withStyle(ChatFormatting.DARK_AQUA)
+				.append(Component.literal("has been unlinked")
+						.withStyle(ChatFormatting.YELLOW))
+				.append(Component.literal(" from PluralBuddy.")
+						.withStyle(ChatFormatting.GRAY));
+		if (!storageCleared)
+		{
+			message = message.copy().append(Component.literal(
+					" The local credential or link snapshot could not be fully removed please check the game log."
+			).withStyle(ChatFormatting.RED));
+		}
+		source.sendFeedback(message);
 	}
 }
