@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.forwynn.net/pluralcraft.png" alt="PluralCraft" width="420" />
+  <img src="https://cdn.forwynn.net/pluralcraft.png" alt="PluralCraft" width="700" />
 </p>
 <p align="center">
   <strong>A Minecraft mod made with systems in mind</strong>
