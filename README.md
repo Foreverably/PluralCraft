@@ -29,12 +29,16 @@ Use `/pluralcraft status` to check fronting, `/pluralcraft alters` to list all
 alters and proxy tags, `/pluralcraft refresh` to update fetched data immediately, and
 `/pluralcraft ap` to inspect the resolved auto-proxy mode, and `/pluralcraft unlink` to clear the link.
 
-> [!WARNING]
-> The client stores OAuth tokens and a linked-system snapshot in
-> `config/pluralcraft/link.json` so it can restore the link after a client or world
-> restart. This includes the access token and refresh token in plaintext, along
-> with alter and auto-proxy data. Protect your Minecraft profile directory and
-> use `/pluralcraft unlink` to remove it.
+## OAuth & Data Storage
+
+OAuth refresh tokens are stored in Windows Credential Manager, macOS Keychain, or a supported Linux credential store.
+The mod stores system, alter, proxy-tag, and auto-proxy data in `config/pluralcraft/link.json` so the link survives game
+restarts. Use
+`/pluralcraft unlink` to remove the snapshot and stored refresh token.
+
+> [!NOTE]
+> Credential-store protection varies by operating system and does not defend against malware or code running as the same
+user.
 
 ## Requirements
 
@@ -79,9 +83,11 @@ PluralCraft connects to PluralBuddy's API and sends active alter presence to
 Minecraft servers running the mod. Alter names and IDs may also be shared with
 connected clients running PluralCraft.
 
-The mod stores OAuth tokens and system, alter, proxy-tag, and auto-proxy data
-in `config/pluralcraft/link.json` so the link survives game restarts. Information
-handled by PluralBuddy is governed by
+The mod stores OAuth refresh tokens in Windows Credential Manager, macOS
+Keychain, or a supported Linux keyring, and stores system, alter, proxy-tag,
+and auto-proxy data in `config/pluralcraft/link.json` so the link survives game
+restarts. Credential-store protection varies by operating system and does not
+defend against malware or code running as the same user. Information handed over to PluralCraft is governed by
 [PluralBuddy's Privacy Policy](https://pluralbuddy.app/docs/policies/privacy).
 
 For help regarding PluralCraft, visit the [support Discord](https://discord.gg/QvvCW7YSR7). Please use
