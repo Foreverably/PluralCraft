@@ -63,19 +63,16 @@ final class PluralCraftCredentialStore
 		{
 			return operation.apply(keyring);
 		}
-		catch (Exception exception)
+		catch (Exception | LinkageError exception)
 		{
 			throw new CredentialStoreException(exception);
-		}
-		catch (LinkageError error)
-		{
-			throw new CredentialStoreException(error);
 		}
 	}
 
 	@FunctionalInterface
 	private interface KeyringOperation<T>
 	{
+
 		T apply(Keyring keyring) throws Exception;
 	}
 
