@@ -303,8 +303,10 @@ final class PluralCraftClientProxy
 				for (int index = 0; index < alter.proxyTags().size(); index++)
 				{
 					PluralBuddyApiClient.ProxyTag tag = alter.proxyTags().get(index);
+
 					String prefix = tag.prefix().isBlank() ? "" : tag.prefix();
 					String suffix = tag.suffix().isBlank() ? "" : tag.suffix();
+
 					if (index > 0)
 					{
 						tags = tags.append(Component.literal(", ").withStyle(ChatFormatting.DARK_GRAY));
