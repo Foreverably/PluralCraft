@@ -13,17 +13,16 @@ represented by the alter who is fronting while playing.
 ## System Linking & Chat Proxying
 
 In game, run
-`/pluralcraft link` to open the PluralBuddy authorization page and allow PluralCraft to fetch the linked system's
-auto-proxy
-settings and alter list, including per-alter proxy tags.
+`/pluralcraft link` to get a PluralBuddy device code which opens the verification page with the code prefilled and asks
+to approve access so PluralCraft can fetch the linked system's
+auto-proxy settings and alter list, including per-alter proxy tags.
+
+If device authorization is unavailable, use `/pluralcraft link oauth` to use
+the browser-based OAuth authorization-code flow instead.
 
 The client applies the linked system's alter, latch, and off auto-proxy modes as well as per-alter prefix or suffix
-proxy
-tags (which are stripped upon sending) and
-shares active presence with servers and connected modded clients. When sending messages on a client / server with
-PluralCraft, chat is
-decorated as
-`<Username> [Alter Name] <message>`.
+proxy tags (which are stripped upon sending) and shares active presence with servers and connected modded clients. When
+sending messages on a client / server with PluralCraft, chat is decorated as `<Username> [Alter Name] <message>`.
 
 Use `/pluralcraft status` to check fronting, `/pluralcraft alters` to list all
 alters and proxy tags, `/pluralcraft refresh` to update fetched data immediately, and
