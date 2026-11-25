@@ -31,4 +31,3 @@ jobs:
           name: pluralcraft-${{ github.sha }}
           path: build/libs/*.jar
           if-no-files-found: error
-          # Uses the repository's artifact retention setting (90 days by default).
