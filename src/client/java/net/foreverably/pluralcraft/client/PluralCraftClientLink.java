@@ -49,6 +49,16 @@ final class PluralCraftClientLink
 
 	static void startLinking(FabricClientCommandSource source)
 	{
+		startLinking(source, true);
+	}
+
+	static void startOAuthLinking(FabricClientCommandSource source)
+	{
+		startLinking(source, false);
+	}
+
+	private static void startLinking(FabricClientCommandSource source, boolean useDeviceFlow)
+	{
 		if (!LINK_IN_PROGRESS.compareAndSet(false, true))
 		{
 			source.sendFeedback(Component.literal("PluralCraft account linking is already in progress."));
@@ -60,16 +70,21 @@ final class PluralCraftClientLink
 		source.sendFeedback(
 				Component.literal("PluralCraft ")
 						.withStyle(ChatFormatting.DARK_AQUA)
-						.append(Component.literal("is connecting")
+						.append(Component.literal("is starting authorization")
 								.withStyle(ChatFormatting.YELLOW))
 						.append(Component.literal(" to PluralBuddy...")
 								.withStyle(ChatFormatting.GRAY))
 		);
-		OAUTH_CLIENT.start()
-				.thenCompose(session -> {
-					openAuthorizationPage(session.authorizationUri(), source);
-					return OAUTH_CLIENT.poll(session);
-				})
+		CompletableFuture<PluralCraftOAuthClient.Tokens> authorization = useDeviceFlow
+				? OAUTH_CLIENT.startDeviceFlow().thenCompose(session -> {
+			Minecraft.getInstance().execute(() -> showDeviceCode(session, source));
+			return OAUTH_CLIENT.pollDeviceFlow(session);
+		})
+				: OAUTH_CLIENT.start().thenCompose(session -> {
+			openAuthorizationPage(session.authorizationUri(), source);
+			return OAUTH_CLIENT.poll(session);
+		});
+		authorization
 				.thenCompose(tokens -> API_CLIENT.getSystem(tokens.accessToken())
 						.thenCombine(
 								API_CLIENT.getAlters(tokens.accessToken()),
@@ -151,7 +166,6 @@ final class PluralCraftClientLink
 					&& Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
 			{
 				Desktop.getDesktop().browse(authorizationUri);
-				return;
 			}
 		}
 		catch (IOException | UnsupportedOperationException | SecurityException exception)
@@ -159,18 +173,35 @@ final class PluralCraftClientLink
 			LOGGER.info("Could not open the PluralBuddy authorization page automatically.");
 		}
 
-		Minecraft.getInstance().execute(() -> source.sendFeedback(
-				Component.literal("Open this URL to authorize PluralCraft: ")
-						.append(Component.literal(authorizationUri.toString())
+	}
+
+	private static void showDeviceCode(
+			PluralCraftOAuthClient.DeviceSession session,
+			FabricClientCommandSource source
+	)
+	{
+		source.sendFeedback(
+				Component.literal("PluralBuddy device code: ")
+						.withStyle(ChatFormatting.GRAY)
+						.append(Component.literal(session.userCode())
+								.withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD))
+		);
+		source.sendFeedback(
+				Component.literal("Approve it here: ")
+						.withStyle(ChatFormatting.GRAY)
+						.append(Component.literal(session.verificationUri().toString())
 								.withStyle(style -> style
 										.withColor(ChatFormatting.AQUA)
 										.withUnderlined(true)
-										.withClickEvent(new net.minecraft.network.chat.ClickEvent.OpenUrl(authorizationUri))
+										.withClickEvent(new net.minecraft.network.chat.ClickEvent.OpenUrl(
+												session.verificationUri()
+										))
 										.withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowText(
-												Component.literal("Click to open in your browser")
+												Component.literal("Open PluralBuddy device authorization")
 										))
 								))
-		));
+		);
+		openAuthorizationPage(session.verificationUri(), source);
 	}
 
 	static void refreshLink(FabricClientCommandSource source)
