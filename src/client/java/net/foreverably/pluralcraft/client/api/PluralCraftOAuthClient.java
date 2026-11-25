@@ -48,6 +48,7 @@ public final class PluralCraftOAuthClient
 		{
 			throw new OAuthException("invalid_authorization_url", exception);
 		}
+
 		if (!"https".equalsIgnoreCase(uri.getScheme())
 				|| !"pluralbuddy.app".equalsIgnoreCase(uri.getHost()))
 		{
@@ -83,11 +84,13 @@ public final class PluralCraftOAuthClient
 		{
 			throw new OAuthException("invalid_verification_url", exception);
 		}
+
 		if (!"https".equalsIgnoreCase(uri.getScheme())
 				|| !"pluralbuddy.app".equalsIgnoreCase(uri.getHost()))
 		{
 			throw new OAuthException("invalid_verification_url");
 		}
+
 		return new DeviceSession(sessionId, userCode, uri, expiresIn, interval);
 	}
 
@@ -100,10 +103,12 @@ public final class PluralCraftOAuthClient
 
 		JsonObject object = response.getAsJsonObject();
 		String status = requiredString(object, "status");
+
 		if (status.equals("pending"))
 		{
 			return new PollResult(status, null, null, null);
 		}
+
 		if (status.equals("failed"))
 		{
 			return new PollResult(
@@ -113,6 +118,7 @@ public final class PluralCraftOAuthClient
 					optionalErrorDescription(object)
 			);
 		}
+
 		if (!status.equals("authorized"))
 		{
 			throw new OAuthException("invalid_website_response");
@@ -146,6 +152,7 @@ public final class PluralCraftOAuthClient
 
 		JsonObject object = response.getAsJsonObject();
 		String status = requiredString(object, "status");
+
 		if (status.equals("pending"))
 		{
 			JsonElement intervalElement = object.get("interval");
@@ -154,14 +161,17 @@ public final class PluralCraftOAuthClient
 					: requiredPositiveInt(object, "interval");
 			return new DevicePollResult(status, null, null, interval);
 		}
+
 		if (status.equals("failed"))
 		{
 			return new DevicePollResult(status, null, requiredString(object, "error"), 0);
 		}
+
 		if (!status.equals("authorized"))
 		{
 			throw new OAuthException("invalid_website_response");
 		}
+
 		return new DevicePollResult(status, parseTokens(object), null, 0);
 	}
 
@@ -180,6 +190,7 @@ public final class PluralCraftOAuthClient
 		{
 			return null;
 		}
+
 		return sanitized.substring(0, Math.min(200, sanitized.length()));
 	}
 
@@ -190,6 +201,7 @@ public final class PluralCraftOAuthClient
 		{
 			throw new OAuthException("invalid_website_response");
 		}
+
 		return value;
 	}
 
@@ -206,11 +218,13 @@ public final class PluralCraftOAuthClient
 		{
 			throw new OAuthException("invalid_website_response");
 		}
+
 		int result = value.getAsInt();
 		if (result <= 0)
 		{
 			throw new OAuthException("invalid_website_response");
 		}
+
 		return result;
 	}
 
