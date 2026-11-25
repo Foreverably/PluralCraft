@@ -21,7 +21,7 @@ final class PluralCraftClientProxy
 	{
 		PluralBuddyApiClient.Autoproxy effective = effectiveAutoproxy();
 		String mode = effective.autoproxyMode().toLowerCase();
- 
+
 		if (mode.contains("alter") || mode.contains("latch"))
 		{
 			if (effective.autoproxyAlter() != null)
@@ -364,17 +364,23 @@ final class PluralCraftClientProxy
 				if (!tag.prefix().isBlank() && message.startsWith(tag.prefix()))
 				{
 					String modified = message.substring(tag.prefix().length());
+
 					PluralCraftClient.latchedAlterId = alter.alterId();
 					PluralCraftClient.sendPresence(alter);
+
 					PluralCraftClientLink.persistLink();
+
 					return ClientPresencePayload.chatMarker(alter.alterId(), alter.displayName()) + modified.trim();
 				}
 				if (!tag.suffix().isBlank() && message.endsWith(tag.suffix()))
 				{
 					String modified = message.substring(0, message.length() - tag.suffix().length());
+
 					PluralCraftClient.latchedAlterId = alter.alterId();
 					PluralCraftClient.sendPresence(alter);
+
 					PluralCraftClientLink.persistLink();
+
 					return ClientPresencePayload.chatMarker(alter.alterId(), alter.displayName()) + modified.trim();
 				}
 			}
@@ -387,6 +393,7 @@ final class PluralCraftClientProxy
 			{
 				PluralCraftClient.sendPresence(active);
 				PluralCraftClientLink.persistLink();
+
 				return ClientPresencePayload.chatMarker(active.alterId(), active.displayName()) + message;
 			}
 		}
@@ -394,6 +401,7 @@ final class PluralCraftClientProxy
 		PluralCraftClient.latchedAlterId = null;
 		PluralCraftClient.sendPresence(null);
 		PluralCraftClientLink.persistLink();
+
 		return ClientPresencePayload.chatMarker("", "") + message;
 	}
 }
