@@ -21,13 +21,8 @@ public final class PluralCraftClient implements ClientModInitializer
 	static volatile List<PluralBuddyApiClient.Alter> linkedAlters = List.of();
 	static volatile List<PluralBuddyApiClient.Autoproxy> linkedAutoproxy = List.of();
 	static volatile String latchedAlterId;
- 
-	static volatile long accessExpiresAtMillis;
 
-	public static PluralCraftOAuthClient.Tokens getSessionTokens()
-	{
-		return PluralCraftClientLink.getSessionTokens();
-	}
+	static volatile long accessExpiresAtMillis;
 
 	static void sendPresence(PluralBuddyApiClient.Alter alter)
 	{
