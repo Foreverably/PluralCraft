@@ -37,9 +37,12 @@ public final class PluralCraftOAuthClient
 		JsonObject object = response.getAsJsonObject();
 		String sessionId = requiredString(object, "session_id");
 		String authorizationUrl = requiredString(object, "authorization_url");
+
 		int expiresIn = requiredPositiveInt(object, "expires_in");
 		int interval = requiredPositiveInt(object, "interval");
+
 		URI uri;
+
 		try
 		{
 			uri = URI.create(authorizationUrl);

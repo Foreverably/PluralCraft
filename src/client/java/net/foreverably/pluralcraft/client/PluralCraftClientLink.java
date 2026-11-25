@@ -36,10 +36,13 @@ final class PluralCraftClientLink
 	private static final PluralCraftOAuthClient OAUTH_CLIENT = new PluralCraftOAuthClient();
 	private static final PluralBuddyApiClient API_CLIENT = new PluralBuddyApiClient();
 	private static final AtomicBoolean LINK_IN_PROGRESS = new AtomicBoolean();
-	private static String persistedRefreshToken;
+
 	private static boolean credentialStoreContainsToken;
 	private static boolean credentialStoreUnavailable;
 	private static boolean snapshotPersisted;
+
+	private static String persistedRefreshToken;
+
 
 	private PluralCraftClientLink()
 	{
@@ -404,10 +407,10 @@ final class PluralCraftClientLink
 	{
 		return refreshed.refreshToken() == null || refreshed.refreshToken().isBlank()
 				? new PluralCraftOAuthClient.Tokens(
-						refreshed.accessToken(),
-						refreshed.expiresIn(),
-						previousRefreshToken
-				)
+				refreshed.accessToken(),
+				refreshed.expiresIn(),
+				previousRefreshToken
+		)
 				: refreshed;
 	}
 
@@ -574,7 +577,7 @@ final class PluralCraftClientLink
 			credentialStoreUnavailable = true;
 			credentialStoreContainsToken = false;
 			LOGGER.warn("Could not migrate the legacy plaintext refresh token to the OS credential store. "
-					+ "The token will be removed from the link snapshot and the link will not survive a restart.",
+							+ "The token will be removed from the link snapshot and the link will not survive a restart.",
 					exception);
 		}
 	}

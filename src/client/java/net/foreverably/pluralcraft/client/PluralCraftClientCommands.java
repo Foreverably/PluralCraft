@@ -56,6 +56,7 @@ final class PluralCraftClientCommands
 	{
 		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
 		PluralBuddyApiClient.Alter active = PluralCraftClientProxy.activeAlter();
+
 		if (tokens == null)
 		{
 			source.sendFeedback(
@@ -96,14 +97,17 @@ final class PluralCraftClientCommands
 		PluralCraftClient.linkedAutoproxy = List.of();
 		PluralCraftClient.latchedAlterId = null;
 		PluralCraftClient.accessExpiresAtMillis = 0;
+
 		boolean storageCleared = PluralCraftClientLink.deletePersistedLink();
 		PluralCraftClient.sendPresence(null);
+
 		Component message = Component.literal("PluralCraft ")
 				.withStyle(ChatFormatting.DARK_AQUA)
 				.append(Component.literal("has been unlinked")
 						.withStyle(ChatFormatting.YELLOW))
 				.append(Component.literal(" from PluralBuddy.")
 						.withStyle(ChatFormatting.GRAY));
+
 		if (!storageCleared)
 		{
 			message = message.copy().append(Component.literal(

@@ -16,10 +16,12 @@ public final class PluralCraftClient implements ClientModInitializer
 {
 
 	static final Map<String, ClientPresencePayload> FRONTING = new ConcurrentHashMap<>();
+
 	static volatile PluralCraftOAuthClient.Tokens sessionTokens;
 	static volatile List<PluralBuddyApiClient.Alter> linkedAlters = List.of();
 	static volatile List<PluralBuddyApiClient.Autoproxy> linkedAutoproxy = List.of();
 	static volatile String latchedAlterId;
+
 	static volatile long accessExpiresAtMillis;
 
 	public static PluralCraftOAuthClient.Tokens getSessionTokens()
@@ -48,6 +50,7 @@ public final class PluralCraftClient implements ClientModInitializer
 	public void onInitializeClient()
 	{
 		PluralCraftClientLink.loadPersistedLink();
+
 		ClientPlayNetworking.registerGlobalReceiver(ClientPresencePayload.TYPE, (payload, context) -> {
 			if (payload.alterId().isBlank())
 			{
