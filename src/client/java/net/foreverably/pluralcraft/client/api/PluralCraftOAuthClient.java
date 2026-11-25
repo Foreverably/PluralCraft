@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.foreverably.pluralcraft.client.api.PluralBuddyApiClient.ApiException;
+import net.foreverably.pluralcraft.client.configs.PluralCraftOAuthConfig;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +12,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -20,11 +20,8 @@ import java.util.concurrent.TimeUnit;
 public final class PluralCraftOAuthClient
 {
 
-	private static final String WEBSITE_BASE_URL = "https://pluralcraft.forwynn.net";
-	private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
-
 	private final HttpClient httpClient = HttpClient.newBuilder()
-			.connectTimeout(REQUEST_TIMEOUT)
+			.connectTimeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
 			.build();
 
 	private static AuthorizationSession parseAuthorizationSession(JsonElement response)
@@ -153,9 +150,9 @@ public final class PluralCraftOAuthClient
 	public CompletableFuture<AuthorizationSession> start()
 	{
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/start")
+						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/start")
 				)
-				.timeout(REQUEST_TIMEOUT)
+				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString("{}"))
@@ -170,9 +167,9 @@ public final class PluralCraftOAuthClient
 		requestBody.addProperty("refresh_token", refreshToken);
 
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/refresh")
+						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/refresh")
 				)
-				.timeout(REQUEST_TIMEOUT)
+				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
@@ -236,9 +233,9 @@ public final class PluralCraftOAuthClient
 		requestBody.addProperty("session_id", sessionId);
 
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/poll")
+						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/poll")
 				)
-				.timeout(REQUEST_TIMEOUT)
+				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))

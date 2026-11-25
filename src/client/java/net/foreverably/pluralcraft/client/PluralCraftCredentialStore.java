@@ -2,6 +2,7 @@ package net.foreverably.pluralcraft.client;
 
 import com.github.javakeyring.Keyring;
 import net.fabricmc.loader.api.FabricLoader;
+import net.foreverably.pluralcraft.client.configs.PluralCraftCredentialStoreConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -11,22 +12,22 @@ import java.util.HexFormat;
 final class PluralCraftCredentialStore
 {
 
-	private static final String SERVICE = "PluralCraft";
-	private static final String ACCOUNT = "PluralBuddy OAuth refresh token";
-
 	private PluralCraftCredentialStore()
 	{
 	}
 
 	static String readRefreshToken() throws CredentialStoreException
 	{
-		return withKeyring(keyring -> keyring.getPassword(SERVICE, account()));
+		return withKeyring(keyring -> keyring.getPassword(
+				PluralCraftCredentialStoreConfig.SERVICE,
+				account()
+		));
 	}
 
 	static void saveRefreshToken(String refreshToken) throws CredentialStoreException
 	{
 		withKeyring(keyring -> {
-			keyring.setPassword(SERVICE, account(), refreshToken);
+			keyring.setPassword(PluralCraftCredentialStoreConfig.SERVICE, account(), refreshToken);
 			return null;
 		});
 	}
@@ -34,7 +35,7 @@ final class PluralCraftCredentialStore
 	static void deleteRefreshToken() throws CredentialStoreException
 	{
 		withKeyring(keyring -> {
-			keyring.deletePassword(SERVICE, account());
+			keyring.deletePassword(PluralCraftCredentialStoreConfig.SERVICE, account());
 			return null;
 		});
 	}
@@ -49,7 +50,8 @@ final class PluralCraftCredentialStore
 		{
 			byte[] digest = MessageDigest.getInstance("SHA-256")
 					.digest(configPath.getBytes(StandardCharsets.UTF_8));
-			return ACCOUNT + " " + HexFormat.of().formatHex(digest);
+			return PluralCraftCredentialStoreConfig.ACCOUNT
+					+ " " + HexFormat.of().formatHex(digest);
 		}
 		catch (NoSuchAlgorithmException exception)
 		{
