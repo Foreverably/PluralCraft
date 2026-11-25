@@ -40,9 +40,8 @@ final class PluralCraftClientLink
 	private static boolean credentialStoreContainsToken;
 	private static boolean credentialStoreUnavailable;
 	private static boolean snapshotPersisted;
-
+ 
 	private static String persistedRefreshToken;
-
 
 	private PluralCraftClientLink()
 	{

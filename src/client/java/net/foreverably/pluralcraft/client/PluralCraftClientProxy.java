@@ -21,6 +21,7 @@ final class PluralCraftClientProxy
 	{
 		PluralBuddyApiClient.Autoproxy effective = effectiveAutoproxy();
 		String mode = effective.autoproxyMode().toLowerCase();
+ 
 		if (mode.contains("alter") || mode.contains("latch"))
 		{
 			if (effective.autoproxyAlter() != null)
