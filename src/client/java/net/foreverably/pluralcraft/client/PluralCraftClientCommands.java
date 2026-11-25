@@ -24,30 +24,41 @@ final class PluralCraftClientCommands
 	{
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) ->
 				dispatcher.register(ClientCommands.literal("pluralcraft")
-						.then(ClientCommands.literal("link").executes(context -> {
-							PluralCraftClientLink.startLinking(context.getSource());
-							return 1;
-						}))
-						.then(ClientCommands.literal("status").executes(context -> {
-							sendStatus(context.getSource());
-							return 1;
-						}))
-						.then(ClientCommands.literal("alters").executes(context -> {
-							PluralCraftClientProxy.showAlters(context.getSource());
-							return 1;
-						}))
-						.then(ClientCommands.literal("ap").executes(context -> {
-							PluralCraftClientProxy.showAutoproxy(context.getSource());
-							return 1;
-						}))
-						.then(ClientCommands.literal("unlink").executes(context -> {
-							unlink(context.getSource());
-							return 1;
-						}))
-						.then(ClientCommands.literal("refresh").executes(context -> {
-							PluralCraftClientLink.refreshLink(context.getSource());
-							return 1;
-						}))
+						.then(ClientCommands.literal("link")
+								.executes(context -> {
+									PluralCraftClientLink.startLinking(context.getSource());
+									return 1;
+								})
+								.then(ClientCommands.literal("oauth")
+										.executes(context -> {
+											PluralCraftClientLink.startOAuthLinking(context.getSource());
+											return 1;
+										})))
+						.then(ClientCommands.literal("status")
+								.executes(context -> {
+									sendStatus(context.getSource());
+									return 1;
+								}))
+						.then(ClientCommands.literal("alters")
+								.executes(context -> {
+									PluralCraftClientProxy.showAlters(context.getSource());
+									return 1;
+								}))
+						.then(ClientCommands.literal("ap")
+								.executes(context -> {
+									PluralCraftClientProxy.showAutoproxy(context.getSource());
+									return 1;
+								}))
+						.then(ClientCommands.literal("unlink")
+								.executes(context -> {
+									unlink(context.getSource());
+									return 1;
+								}))
+						.then(ClientCommands.literal("refresh")
+								.executes(context -> {
+									PluralCraftClientLink.refreshLink(context.getSource());
+									return 1;
+								}))
 				)
 		);
 	}
