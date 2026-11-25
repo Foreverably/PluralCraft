@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.foreverably.pluralcraft.client.api.PluralBuddyApiClient.ApiException;
-import net.foreverably.pluralcraft.client.configs.PluralCraftOAuthConfig;
+import net.foreverably.pluralcraft.client.constants.PluralCraftOAuthConfig;
 
 import java.io.IOException;
 import java.net.URI;

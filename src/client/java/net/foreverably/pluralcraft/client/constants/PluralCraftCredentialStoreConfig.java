@@ -1,4 +1,4 @@
-package net.foreverably.pluralcraft.client.configs;
+package net.foreverably.pluralcraft.client.constants;
 
 public final class PluralCraftCredentialStoreConfig
 {

@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.foreverably.pluralcraft.client.configs.PluralBuddyApiConfig;
+import net.foreverably.pluralcraft.client.constants.PluralBuddyApiConfig;
 
 import java.net.URI;
 import java.net.http.HttpClient;

@@ -2,7 +2,7 @@ package net.foreverably.pluralcraft.client;
 
 import com.github.javakeyring.Keyring;
 import net.fabricmc.loader.api.FabricLoader;
-import net.foreverably.pluralcraft.client.configs.PluralCraftCredentialStoreConfig;
+import net.foreverably.pluralcraft.client.constants.PluralCraftCredentialStoreConfig;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

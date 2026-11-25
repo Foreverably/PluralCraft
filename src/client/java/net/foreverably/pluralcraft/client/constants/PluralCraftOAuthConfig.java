@@ -1,4 +1,4 @@
-package net.foreverably.pluralcraft.client.configs;
+package net.foreverably.pluralcraft.client.constants;
 
 import java.time.Duration;
 
