@@ -57,6 +57,40 @@ public final class PluralCraftOAuthClient
 		return new AuthorizationSession(sessionId, uri, expiresIn, interval);
 	}
 
+	private static DeviceSession parseDeviceSession(JsonElement response)
+	{
+		if (!response.isJsonObject())
+		{
+			throw new OAuthException("invalid_website_response");
+		}
+
+		JsonObject object = response.getAsJsonObject();
+
+		String sessionId = requiredString(object, "session_id");
+		String userCode = requiredString(object, "user_code");
+		String verificationUri = requiredString(object, "verification_uri");
+
+		int expiresIn = requiredPositiveInt(object, "expires_in");
+		int interval = requiredPositiveInt(object, "interval");
+
+		URI uri;
+
+		try
+		{
+			uri = URI.create(verificationUri);
+		}
+		catch (IllegalArgumentException exception)
+		{
+			throw new OAuthException("invalid_verification_url", exception);
+		}
+		if (!"https".equalsIgnoreCase(uri.getScheme())
+				|| !"pluralbuddy.app".equalsIgnoreCase(uri.getHost()))
+		{
+			throw new OAuthException("invalid_verification_url");
+		}
+		return new DeviceSession(sessionId, userCode, uri, expiresIn, interval);
+	}
+
 	private static PollResult parsePollResult(JsonElement response)
 	{
 		if (!response.isJsonObject())
@@ -84,6 +118,11 @@ public final class PluralCraftOAuthClient
 			throw new OAuthException("invalid_website_response");
 		}
 
+		return new PollResult(status, parseTokens(object), null, null);
+	}
+
+	private static Tokens parseTokens(JsonObject object)
+	{
 		JsonElement tokensElement = object.get("tokens");
 		if (tokensElement == null || !tokensElement.isJsonObject())
 		{
@@ -91,11 +130,39 @@ public final class PluralCraftOAuthClient
 		}
 
 		JsonObject tokens = tokensElement.getAsJsonObject();
-		return new PollResult(status, new Tokens(
+		return new Tokens(
 				requiredString(tokens, "access_token"),
 				requiredPositiveInt(tokens, "expires_in"),
 				optionalString(tokens, "refresh_token")
-		), null, null);
+		);
+	}
+
+	private static DevicePollResult parseDevicePollResult(JsonElement response, int fallbackInterval)
+	{
+		if (!response.isJsonObject())
+		{
+			throw new OAuthException("invalid_website_response");
+		}
+
+		JsonObject object = response.getAsJsonObject();
+		String status = requiredString(object, "status");
+		if (status.equals("pending"))
+		{
+			JsonElement intervalElement = object.get("interval");
+			int interval = intervalElement == null
+					? fallbackInterval
+					: requiredPositiveInt(object, "interval");
+			return new DevicePollResult(status, null, null, interval);
+		}
+		if (status.equals("failed"))
+		{
+			return new DevicePollResult(status, null, requiredString(object, "error"), 0);
+		}
+		if (!status.equals("authorized"))
+		{
+			throw new OAuthException("invalid_website_response");
+		}
+		return new DevicePollResult(status, parseTokens(object), null, 0);
 	}
 
 	private static String optionalErrorDescription(JsonObject object)
@@ -159,6 +226,72 @@ public final class PluralCraftOAuthClient
 				.build();
 
 		return send(request).thenApply(PluralCraftOAuthClient::parseAuthorizationSession);
+	}
+
+	public CompletableFuture<DeviceSession> startDeviceFlow()
+	{
+		HttpRequest request = HttpRequest.newBuilder(
+						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/device/start")
+				)
+				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.header("Accept", "application/json")
+				.header("Content-Type", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofString("{}"))
+				.build();
+
+		return send(request).thenApply(PluralCraftOAuthClient::parseDeviceSession);
+	}
+
+	public CompletableFuture<Tokens> pollDeviceFlow(DeviceSession session)
+	{
+		long expiresAt = System.nanoTime() + TimeUnit.SECONDS.toNanos(session.expiresIn());
+		return pollDeviceSession(session, expiresAt, session.interval());
+	}
+
+	private CompletableFuture<Tokens> pollDeviceSession(
+			DeviceSession session,
+			long expiresAt,
+			int interval
+	)
+	{
+		if (System.nanoTime() >= expiresAt)
+		{
+			return CompletableFuture.failedFuture(new OAuthException("authorization_expired"));
+		}
+
+		return CompletableFuture.supplyAsync(
+						() -> null,
+						CompletableFuture.delayedExecutor(interval, TimeUnit.SECONDS)
+				)
+				.thenCompose(ignored -> pollDeviceOnce(session.sessionId(), interval))
+				.thenCompose(result -> {
+					if (result.status().equals("authorized"))
+					{
+						return CompletableFuture.completedFuture(result.tokens());
+					}
+					if (result.status().equals("failed"))
+					{
+						return CompletableFuture.failedFuture(new OAuthException(result.error()));
+					}
+					return pollDeviceSession(session, expiresAt, result.interval());
+				});
+	}
+
+	private CompletableFuture<DevicePollResult> pollDeviceOnce(String sessionId, int interval)
+	{
+		JsonObject requestBody = new JsonObject();
+		requestBody.addProperty("session_id", sessionId);
+
+		HttpRequest request = HttpRequest.newBuilder(
+						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/device/poll")
+				)
+				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.header("Accept", "application/json")
+				.header("Content-Type", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
+				.build();
+
+		return send(request).thenApply(response -> parseDevicePollResult(response, interval));
 	}
 
 	public CompletableFuture<Tokens> refresh(String refreshToken)
@@ -276,6 +409,17 @@ public final class PluralCraftOAuthClient
 
 	}
 
+	public record DeviceSession(
+			String sessionId,
+			String userCode,
+			URI verificationUri,
+			int expiresIn,
+			int interval
+	)
+	{
+
+	}
+
 	public record Tokens(String accessToken, int expiresIn, String refreshToken)
 	{
 
@@ -287,6 +431,11 @@ public final class PluralCraftOAuthClient
 			String error,
 			String errorDescription
 	)
+	{
+
+	}
+
+	private record DevicePollResult(String status, Tokens tokens, String error, int interval)
 	{
 
 	}
