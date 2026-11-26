@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Environment(EnvType.CLIENT)
-final class PluralCraftClientLink
+final class ClientLink
 {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("pluralcraft-client");
@@ -28,7 +28,7 @@ final class PluralCraftClientLink
 	private static final PluralBuddyApiClient API_CLIENT = new PluralBuddyApiClient();
 	private static final AtomicBoolean LINK_IN_PROGRESS = new AtomicBoolean();
 
-	private PluralCraftClientLink()
+	private ClientLink()
 	{
 	}
 
@@ -50,8 +50,8 @@ final class PluralCraftClientLink
 			return;
 		}
 
-		PluralCraftClient.sessionTokens = null;
-		PluralCraftClientLinkPersistence.resetCredentialStoreUnavailable();
+		Client.sessionTokens = null;
+		ClientLinkPersistence.resetCredentialStoreUnavailable();
 		source.sendFeedback(
 				Component.literal("PluralCraft ")
 						.withStyle(ChatFormatting.DARK_AQUA)
@@ -82,13 +82,13 @@ final class PluralCraftClientLink
 								)
 						))
 				.thenApply(result -> {
-					PluralCraftClient.sessionTokens = result.tokens();
-					PluralCraftClient.accessExpiresAtMillis = System.currentTimeMillis()
+					Client.sessionTokens = result.tokens();
+					Client.accessExpiresAtMillis = System.currentTimeMillis()
 							+ TimeUnit.SECONDS.toMillis(result.tokens().expiresIn());
-					PluralCraftClient.linkedAutoproxy = result.autoproxy();
-					PluralCraftClient.linkedAlters = result.alters();
-					PluralCraftClientProxy.initializeActiveAlter();
-					PluralCraftClient.sendPresence(PluralCraftClientProxy.activeAlter());
+					Client.linkedAutoproxy = result.autoproxy();
+					Client.linkedAlters = result.alters();
+					ClientProxy.initializeActiveAlter();
+					Client.sendPresence(ClientProxy.activeAlter());
 					persistLink();
 					scheduleRefresh();
 					return result;
@@ -191,7 +191,7 @@ final class PluralCraftClientLink
 
 	static void refreshLink(FabricClientCommandSource source)
 	{
-		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		PluralCraftOAuthClient.Tokens tokens = Client.sessionTokens;
 		if (tokens == null)
 		{
 			source.sendFeedback(
@@ -224,11 +224,11 @@ final class PluralCraftClientLink
 						return;
 					}
 
-					PluralCraftClient.linkedAutoproxy = result.autoproxy();
-					PluralCraftClient.linkedAlters = result.alters();
-					PluralCraftClientProxy.initializeActiveAlter();
-					PluralBuddyApiClient.Alter active = PluralCraftClientProxy.activeAlter();
-					PluralCraftClient.sendPresence(active);
+					Client.linkedAutoproxy = result.autoproxy();
+					Client.linkedAlters = result.alters();
+					ClientProxy.initializeActiveAlter();
+					PluralBuddyApiClient.Alter active = ClientProxy.activeAlter();
+					Client.sendPresence(active);
 					persistLink();
 					source.sendFeedback(Component.literal(
 							active == null
@@ -244,18 +244,18 @@ final class PluralCraftClientLink
 				() -> {
 				},
 				CompletableFuture.delayedExecutor(30, TimeUnit.SECONDS)
-		).thenRun(PluralCraftClientLink::refreshWithoutFeedback);
+		).thenRun(ClientLink::refreshWithoutFeedback);
 	}
 
 	private static CompletableFuture<PluralCraftOAuthClient.Tokens> ensureCurrentTokens()
 	{
-		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		PluralCraftOAuthClient.Tokens tokens = Client.sessionTokens;
 		if (tokens == null)
 		{
 			return CompletableFuture.failedFuture(new IllegalStateException("Not linked."));
 		}
 
-		if (PluralCraftClient.accessExpiresAtMillis > System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1))
+		if (Client.accessExpiresAtMillis > System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1))
 		{
 			return CompletableFuture.completedFuture(tokens);
 		}
@@ -266,8 +266,8 @@ final class PluralCraftClientLink
 
 		return OAUTH_CLIENT.refresh(tokens.refreshToken()).thenApply(refreshed -> {
 			PluralCraftOAuthClient.Tokens currentTokens = retainRefreshToken(refreshed, tokens.refreshToken());
-			PluralCraftClient.sessionTokens = currentTokens;
-			PluralCraftClient.accessExpiresAtMillis = System.currentTimeMillis()
+			Client.sessionTokens = currentTokens;
+			Client.accessExpiresAtMillis = System.currentTimeMillis()
 					+ TimeUnit.SECONDS.toMillis(currentTokens.expiresIn());
 			persistLink();
 			return currentTokens;
@@ -276,7 +276,7 @@ final class PluralCraftClientLink
 
 	private static void refreshWithoutFeedback()
 	{
-		if (PluralCraftClient.sessionTokens == null)
+		if (Client.sessionTokens == null)
 		{
 			return;
 		}
@@ -295,10 +295,10 @@ final class PluralCraftClientLink
 				.whenComplete((result, error) -> {
 					if (error == null)
 					{
-						PluralCraftClient.linkedAutoproxy = result.autoproxy();
-						PluralCraftClient.linkedAlters = result.alters();
-						PluralCraftClientProxy.initializeActiveAlter();
-						PluralCraftClient.sendPresence(PluralCraftClientProxy.activeAlter());
+						Client.linkedAutoproxy = result.autoproxy();
+						Client.linkedAlters = result.alters();
+						ClientProxy.initializeActiveAlter();
+						Client.sendPresence(ClientProxy.activeAlter());
 						persistLink();
 					}
 					scheduleRefresh();
@@ -307,7 +307,7 @@ final class PluralCraftClientLink
 
 	static synchronized void persistLink()
 	{
-		PluralCraftClientLinkPersistence.persist();
+		ClientLinkPersistence.persist();
 	}
 
 	private static PluralCraftOAuthClient.Tokens retainRefreshToken(
@@ -326,18 +326,18 @@ final class PluralCraftClientLink
 
 	static synchronized boolean hasPersistedRefreshToken()
 	{
-		return PluralCraftClientLinkPersistence.hasPersistedRefreshToken();
+		return ClientLinkPersistence.hasPersistedRefreshToken();
 	}
 
 	static synchronized boolean deletePersistedLink()
 	{
-		return PluralCraftClientLinkPersistence.deletePersistedLink();
+		return ClientLinkPersistence.deletePersistedLink();
 	}
 
 	static synchronized void loadPersistedLink()
 	{
-		PluralCraftClientLinkPersistence.PersistedLink persistedLink =
-				PluralCraftClientLinkPersistence.load();
+		ClientLinkPersistence.PersistedLink persistedLink =
+				ClientLinkPersistence.load();
 		if (persistedLink == null)
 		{
 			return;
@@ -348,7 +348,7 @@ final class PluralCraftClientLink
 				&& !accessToken.isBlank()
 				&& persistedLink.accessExpiresAtMillis() > System.currentTimeMillis())
 		{
-			PluralCraftClient.sessionTokens = new PluralCraftOAuthClient.Tokens(
+			Client.sessionTokens = new PluralCraftOAuthClient.Tokens(
 					accessToken,
 					(int) Math.max(1,
 							(persistedLink.accessExpiresAtMillis() - System.currentTimeMillis()) / 1000),
@@ -371,13 +371,13 @@ final class PluralCraftClientLink
 			if (error != null)
 			{
 				LOGGER.warn("Could not refresh the persisted PluralCraft link.");
-				PluralCraftClient.sessionTokens = null;
+				Client.sessionTokens = null;
 				return;
 			}
 
 			PluralCraftOAuthClient.Tokens currentTokens = retainRefreshToken(tokens, refreshToken);
-			PluralCraftClient.sessionTokens = currentTokens;
-			PluralCraftClient.accessExpiresAtMillis = System.currentTimeMillis()
+			Client.sessionTokens = currentTokens;
+			Client.accessExpiresAtMillis = System.currentTimeMillis()
 					+ TimeUnit.SECONDS.toMillis(currentTokens.expiresIn());
 			persistLink();
 			restorePersistedLink();
@@ -386,11 +386,11 @@ final class PluralCraftClientLink
 
 	private static void restorePersistedLink()
 	{
-		PluralCraftClientProxy.initializeActiveAlter();
-		PluralCraftClient.sendPresence(PluralCraftClientProxy.activeAlter());
+		ClientProxy.initializeActiveAlter();
+		Client.sendPresence(ClientProxy.activeAlter());
 		scheduleRefresh();
 
-		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		PluralCraftOAuthClient.Tokens tokens = Client.sessionTokens;
 		if (tokens != null)
 		{
 			API_CLIENT.getSystem(tokens.accessToken())
@@ -406,10 +406,10 @@ final class PluralCraftClientLink
 					.whenComplete((result, error) -> {
 						if (error == null)
 						{
-							PluralCraftClient.linkedAutoproxy = result.autoproxy();
-							PluralCraftClient.linkedAlters = result.alters();
-							PluralCraftClientProxy.initializeActiveAlter();
-							PluralCraftClient.sendPresence(PluralCraftClientProxy.activeAlter());
+							Client.linkedAutoproxy = result.autoproxy();
+							Client.linkedAlters = result.alters();
+							ClientProxy.initializeActiveAlter();
+							Client.sendPresence(ClientProxy.activeAlter());
 							persistLink();
 						}
 					});

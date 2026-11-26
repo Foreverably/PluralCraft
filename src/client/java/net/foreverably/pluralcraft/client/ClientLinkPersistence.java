@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
-final class PluralCraftClientLinkPersistence
+final class ClientLinkPersistence
 {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("pluralcraft-client");
@@ -32,7 +32,7 @@ final class PluralCraftClientLinkPersistence
 
 	private static String persistedRefreshToken;
 
-	private PluralCraftClientLinkPersistence()
+	private ClientLinkPersistence()
 	{
 	}
 
@@ -43,7 +43,7 @@ final class PluralCraftClientLinkPersistence
 
 	static synchronized void persist()
 	{
-		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		PluralCraftOAuthClient.Tokens tokens = Client.sessionTokens;
 		if (tokens == null)
 		{
 			return;
@@ -57,11 +57,11 @@ final class PluralCraftClientLinkPersistence
 		{
 			try
 			{
-				PluralCraftCredentialStore.saveRefreshToken(refreshToken);
+				CredentialStore.saveRefreshToken(refreshToken);
 				persistedRefreshToken = refreshToken;
 				credentialStoreContainsToken = true;
 			}
-			catch (PluralCraftCredentialStore.CredentialStoreException exception)
+			catch (CredentialStore.CredentialStoreException exception)
 			{
 				credentialStoreUnavailable = true;
 				LOGGER.warn("Could not save the PluralCraft refresh token to the OS credential store. "
@@ -77,7 +77,7 @@ final class PluralCraftClientLinkPersistence
 
 	static synchronized boolean hasPersistedRefreshToken()
 	{
-		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
+		PluralCraftOAuthClient.Tokens tokens = Client.sessionTokens;
 		return credentialStoreContainsToken
 				&& snapshotPersisted
 				&& tokens != null
@@ -104,11 +104,11 @@ final class PluralCraftClientLinkPersistence
 		{
 			try
 			{
-				PluralCraftCredentialStore.deleteRefreshToken();
+				CredentialStore.deleteRefreshToken();
 				persistedRefreshToken = null;
 				credentialStoreContainsToken = false;
 			}
-			catch (PluralCraftCredentialStore.CredentialStoreException exception)
+			catch (CredentialStore.CredentialStoreException exception)
 			{
 				LOGGER.warn("Could not remove the PluralCraft refresh token from the OS credential store.",
 						exception);
@@ -153,11 +153,11 @@ final class PluralCraftClientLinkPersistence
 					? expiresElement.getAsLong()
 					: 0;
 
-			PluralCraftClient.accessExpiresAtMillis = accessExpiresAtMillis;
-			PluralCraftClient.latchedAlterId = optionalPersistedString(root, "latched_alter_id");
+			Client.accessExpiresAtMillis = accessExpiresAtMillis;
+			Client.latchedAlterId = optionalPersistedString(root, "latched_alter_id");
 
-			PluralCraftClient.linkedAutoproxy = parsePersistedAutoproxy(root);
-			PluralCraftClient.linkedAlters = parsePersistedAlters(root);
+			Client.linkedAutoproxy = parsePersistedAutoproxy(root);
+			Client.linkedAlters = parsePersistedAlters(root);
 			snapshotPersisted = true;
 
 			if (refreshToken != null)
@@ -174,7 +174,7 @@ final class PluralCraftClientLinkPersistence
 					&& root.getAsJsonPrimitive("credential_store").getAsBoolean())
 			{
 				credentialStoreContainsToken = true;
-				refreshToken = PluralCraftCredentialStore.readRefreshToken();
+				refreshToken = CredentialStore.readRefreshToken();
 				if (refreshToken == null || refreshToken.isBlank())
 				{
 					throw new IllegalStateException("The OS credential store returned an empty refresh token.");
@@ -188,7 +188,7 @@ final class PluralCraftClientLinkPersistence
 			}
 			return new PersistedLink(accessToken, refreshToken, accessExpiresAtMillis);
 		}
-		catch (PluralCraftCredentialStore.CredentialStoreException exception)
+		catch (CredentialStore.CredentialStoreException exception)
 		{
 			credentialStoreUnavailable = true;
 			LOGGER.warn("Could not read the PluralCraft refresh token from the OS credential store. "
@@ -220,13 +220,13 @@ final class PluralCraftClientLinkPersistence
 		{
 			JsonObject root = new JsonObject();
 			root.addProperty("credential_store", tokenStored);
-			root.addProperty("latched_alter_id", PluralCraftClient.latchedAlterId);
+			root.addProperty("latched_alter_id", Client.latchedAlterId);
 
 			JsonArray autoproxy = createAutoproxy();
 			root.add("autoproxy", autoproxy);
 
 			JsonArray alters = new JsonArray();
-			for (PluralBuddyApiClient.Alter alter : PluralCraftClient.linkedAlters)
+			for (PluralBuddyApiClient.Alter alter : Client.linkedAlters)
 			{
 				JsonObject object = new JsonObject();
 				object.addProperty("alter_id", alter.alterId());
@@ -284,11 +284,11 @@ final class PluralCraftClientLinkPersistence
 	{
 		try
 		{
-			PluralCraftCredentialStore.saveRefreshToken(refreshToken);
+			CredentialStore.saveRefreshToken(refreshToken);
 			persistedRefreshToken = refreshToken;
 			credentialStoreContainsToken = true;
 		}
-		catch (PluralCraftCredentialStore.CredentialStoreException exception)
+		catch (CredentialStore.CredentialStoreException exception)
 		{
 			credentialStoreUnavailable = true;
 			credentialStoreContainsToken = false;
@@ -371,7 +371,7 @@ final class PluralCraftClientLinkPersistence
 	private static JsonArray createAutoproxy()
 	{
 		JsonArray autoproxy = new JsonArray();
-		for (PluralBuddyApiClient.Autoproxy entry : PluralCraftClient.linkedAutoproxy)
+		for (PluralBuddyApiClient.Autoproxy entry : Client.linkedAutoproxy)
 		{
 			JsonObject object = new JsonObject();
 			object.addProperty("mode", entry.autoproxyMode());

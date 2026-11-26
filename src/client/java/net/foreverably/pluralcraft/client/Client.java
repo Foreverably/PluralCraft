@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class PluralCraftClient implements ClientModInitializer
+public final class Client implements ClientModInitializer
 {
 
 	static final Map<String, ClientPresencePayload> FRONTING = new ConcurrentHashMap<>();
@@ -44,7 +44,7 @@ public final class PluralCraftClient implements ClientModInitializer
 	@Override
 	public void onInitializeClient()
 	{
-		PluralCraftClientLink.loadPersistedLink();
+		ClientLink.loadPersistedLink();
 
 		ClientPlayNetworking.registerGlobalReceiver(ClientPresencePayload.TYPE, (payload, context) -> {
 			if (payload.alterId().isBlank())
@@ -57,7 +57,7 @@ public final class PluralCraftClient implements ClientModInitializer
 			}
 		});
 
-		ClientSendMessageEvents.MODIFY_CHAT.register(PluralCraftClientProxy::modifyProxyMessage);
+		ClientSendMessageEvents.MODIFY_CHAT.register(ClientProxy::modifyProxyMessage);
 		PluralCraftClientCommands.register();
 	}
 }

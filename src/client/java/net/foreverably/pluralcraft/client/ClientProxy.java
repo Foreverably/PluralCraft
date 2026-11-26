@@ -10,10 +10,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 @Environment(EnvType.CLIENT)
-final class PluralCraftClientProxy
+final class ClientProxy
 {
 
-	private PluralCraftClientProxy()
+	private ClientProxy()
 	{
 	}
 
@@ -26,19 +26,19 @@ final class PluralCraftClientProxy
 		{
 			if (effective.autoproxyAlter() != null)
 			{
-				PluralCraftClient.latchedAlterId = effective.autoproxyAlter();
+				Client.latchedAlterId = effective.autoproxyAlter();
 			}
 			return;
 		}
 		if (mode.contains("off"))
 		{
-			PluralCraftClient.latchedAlterId = null;
+			Client.latchedAlterId = null;
 		}
 	}
 
 	private static String autoproxyMode()
 	{
-		if (PluralCraftClient.linkedAutoproxy.isEmpty())
+		if (Client.linkedAutoproxy.isEmpty())
 		{
 			return "off";
 		}
@@ -50,7 +50,7 @@ final class PluralCraftClientProxy
 
 		// Probably the worst way to do this but if it works it works.
 
-		for (PluralBuddyApiClient.Autoproxy entry : PluralCraftClient.linkedAutoproxy)
+		for (PluralBuddyApiClient.Autoproxy entry : Client.linkedAutoproxy)
 		{
 			String mode = entry.autoproxyMode().toLowerCase();
 			if (mode.contains("alter") && entry.autoproxyAlter() != null)
@@ -58,7 +58,7 @@ final class PluralCraftClientProxy
 				return entry;
 			}
 		}
-		for (PluralBuddyApiClient.Autoproxy entry : PluralCraftClient.linkedAutoproxy)
+		for (PluralBuddyApiClient.Autoproxy entry : Client.linkedAutoproxy)
 		{
 			String mode = entry.autoproxyMode().toLowerCase();
 			if (mode.contains("latch"))
@@ -66,7 +66,7 @@ final class PluralCraftClientProxy
 				return entry;
 			}
 		}
-		for (PluralBuddyApiClient.Autoproxy entry : PluralCraftClient.linkedAutoproxy)
+		for (PluralBuddyApiClient.Autoproxy entry : Client.linkedAutoproxy)
 		{
 			String mode = entry.autoproxyMode().toLowerCase();
 			if (("@global".equals(entry.serverId()) && (mode.contains("alter") || mode.contains("latch")))
@@ -75,14 +75,14 @@ final class PluralCraftClientProxy
 				return entry;
 			}
 		}
-		for (PluralBuddyApiClient.Autoproxy entry : PluralCraftClient.linkedAutoproxy)
+		for (PluralBuddyApiClient.Autoproxy entry : Client.linkedAutoproxy)
 		{
 			if ("@global".equals(entry.serverId()))
 			{
 				return entry;
 			}
 		}
-		return PluralCraftClient.linkedAutoproxy.getFirst();
+		return Client.linkedAutoproxy.getFirst();
 	}
 
 	static PluralBuddyApiClient.Alter activeAlter()
@@ -97,16 +97,16 @@ final class PluralCraftClientProxy
 		}
 		if (mode.contains("latch") || mode.contains("off"))
 		{
-			return PluralCraftClient.latchedAlterId == null
+			return Client.latchedAlterId == null
 					? null
-					: findAlter(PluralCraftClient.latchedAlterId);
+					: findAlter(Client.latchedAlterId);
 		}
 		return null;
 	}
 
 	private static PluralBuddyApiClient.Alter findAlter(String alterId)
 	{
-		for (PluralBuddyApiClient.Alter alter : PluralCraftClient.linkedAlters)
+		for (PluralBuddyApiClient.Alter alter : Client.linkedAlters)
 		{
 			if (alter.alterId().equals(alterId))
 			{
@@ -118,7 +118,7 @@ final class PluralCraftClientProxy
 
 	static void showAutoproxy(FabricClientCommandSource source)
 	{
-		if (PluralCraftClient.linkedAutoproxy.isEmpty())
+		if (Client.linkedAutoproxy.isEmpty())
 		{
 			source.sendFeedback(
 					Component.literal("PluralCraft ")
@@ -162,14 +162,14 @@ final class PluralCraftClientProxy
 				Component.literal("Listed Alters (hover a name for details):")
 						.withStyle(ChatFormatting.DARK_AQUA)
 		);
-		if (PluralCraftClient.linkedAlters.isEmpty())
+		if (Client.linkedAlters.isEmpty())
 		{
 			source.sendFeedback(Component.literal("  No alters were fetched.")
 					.withStyle(ChatFormatting.YELLOW));
 			return;
 		}
 
-		for (PluralBuddyApiClient.Alter alter : PluralCraftClient.linkedAlters)
+		for (PluralBuddyApiClient.Alter alter : Client.linkedAlters)
 		{
 			boolean isActive = active != null && active.alterId().equals(alter.alterId());
 			source.sendFeedback(
@@ -271,7 +271,7 @@ final class PluralCraftClientProxy
 
 	static void showAlters(FabricClientCommandSource source)
 	{
-		if (PluralCraftClient.sessionTokens == null)
+		if (Client.sessionTokens == null)
 		{
 			source.sendFeedback(
 					Component.literal("PluralCraft ")
@@ -287,12 +287,12 @@ final class PluralCraftClientProxy
 		source.sendFeedback(
 				Component.literal("PluralCraft alters")
 						.withStyle(ChatFormatting.DARK_AQUA, ChatFormatting.BOLD)
-						.append(Component.literal(" (" + PluralCraftClient.linkedAlters.size() + ")")
+						.append(Component.literal(" (" + Client.linkedAlters.size() + ")")
 								.withStyle(ChatFormatting.GRAY))
 		);
 
 		PluralBuddyApiClient.Alter active = activeAlter();
-		for (PluralBuddyApiClient.Alter alter : PluralCraftClient.linkedAlters)
+		for (PluralBuddyApiClient.Alter alter : Client.linkedAlters)
 		{
 			boolean isActive = active != null && active.alterId().equals(alter.alterId());
 			MutableComponent tags = Component.literal("none")
@@ -328,7 +328,7 @@ final class PluralCraftClientProxy
 			);
 		}
 
-		if (PluralCraftClient.linkedAlters.isEmpty())
+		if (Client.linkedAlters.isEmpty())
 		{
 			source.sendFeedback(
 					Component.literal("No alters were found.")
@@ -339,7 +339,7 @@ final class PluralCraftClientProxy
 
 	static String modifyProxyMessage(String message)
 	{
-		if (PluralCraftClient.sessionTokens == null || PluralCraftClient.linkedAlters.isEmpty())
+		if (Client.sessionTokens == null || Client.linkedAlters.isEmpty())
 		{
 			return message;
 		}
@@ -350,16 +350,16 @@ final class PluralCraftClientProxy
 			PluralBuddyApiClient.Alter active = activeAlter();
 			if (active == null)
 			{
-				PluralCraftClient.sendPresence(null);
-				PluralCraftClientLink.persistLink();
+				Client.sendPresence(null);
+				ClientLink.persistLink();
 				return message;
 			}
-			PluralCraftClient.sendPresence(active);
-			PluralCraftClientLink.persistLink();
+			Client.sendPresence(active);
+			ClientLink.persistLink();
 			return ClientPresencePayload.chatMarker(active.alterId(), active.displayName()) + message;
 		}
 
-		for (PluralBuddyApiClient.Alter alter : PluralCraftClient.linkedAlters)
+		for (PluralBuddyApiClient.Alter alter : Client.linkedAlters)
 		{
 			for (PluralBuddyApiClient.ProxyTag tag : alter.proxyTags())
 			{
@@ -367,10 +367,10 @@ final class PluralCraftClientProxy
 				{
 					String modified = message.substring(tag.prefix().length());
 
-					PluralCraftClient.latchedAlterId = alter.alterId();
-					PluralCraftClient.sendPresence(alter);
+					Client.latchedAlterId = alter.alterId();
+					Client.sendPresence(alter);
 
-					PluralCraftClientLink.persistLink();
+					ClientLink.persistLink();
 
 					return ClientPresencePayload.chatMarker(alter.alterId(), alter.displayName()) + modified.trim();
 				}
@@ -378,10 +378,10 @@ final class PluralCraftClientProxy
 				{
 					String modified = message.substring(0, message.length() - tag.suffix().length());
 
-					PluralCraftClient.latchedAlterId = alter.alterId();
-					PluralCraftClient.sendPresence(alter);
+					Client.latchedAlterId = alter.alterId();
+					Client.sendPresence(alter);
 
-					PluralCraftClientLink.persistLink();
+					ClientLink.persistLink();
 
 					return ClientPresencePayload.chatMarker(alter.alterId(), alter.displayName()) + modified.trim();
 				}
@@ -393,16 +393,16 @@ final class PluralCraftClientProxy
 			PluralBuddyApiClient.Alter active = activeAlter();
 			if (active != null)
 			{
-				PluralCraftClient.sendPresence(active);
-				PluralCraftClientLink.persistLink();
+				Client.sendPresence(active);
+				ClientLink.persistLink();
 
 				return ClientPresencePayload.chatMarker(active.alterId(), active.displayName()) + message;
 			}
 		}
 
-		PluralCraftClient.latchedAlterId = null;
-		PluralCraftClient.sendPresence(null);
-		PluralCraftClientLink.persistLink();
+		Client.latchedAlterId = null;
+		Client.sendPresence(null);
+		ClientLink.persistLink();
 
 		return ClientPresencePayload.chatMarker("", "") + message;
 	}
