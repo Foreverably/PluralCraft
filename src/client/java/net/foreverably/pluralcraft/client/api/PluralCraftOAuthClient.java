@@ -20,8 +20,9 @@ import java.util.concurrent.TimeUnit;
 public final class PluralCraftOAuthClient
 {
 
+	private final PluralCraftOAuthConfig config = new PluralCraftOAuthConfig();
 	private final HttpClient httpClient = HttpClient.newBuilder()
-			.connectTimeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+			.connectTimeout(config.getRequestTimeout())
 			.build();
 
 	private static AuthorizationSession parseAuthorizationSession(JsonElement response)
@@ -231,9 +232,9 @@ public final class PluralCraftOAuthClient
 	public CompletableFuture<AuthorizationSession> start()
 	{
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/start")
+						URI.create(config.getBaseURL() + "/api/pluralbuddy/oauth/start")
 				)
-				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.timeout(config.getRequestTimeout())
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString("{}"))
@@ -245,9 +246,9 @@ public final class PluralCraftOAuthClient
 	public CompletableFuture<DeviceSession> startDeviceFlow()
 	{
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/device/start")
+						URI.create(config.getBaseURL() + "/api/pluralbuddy/device/start")
 				)
-				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.timeout(config.getRequestTimeout())
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString("{}"))
@@ -297,9 +298,9 @@ public final class PluralCraftOAuthClient
 		requestBody.addProperty("session_id", sessionId);
 
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/device/poll")
+						URI.create(config.getBaseURL() + "/api/pluralbuddy/device/poll")
 				)
-				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.timeout(config.getRequestTimeout())
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
@@ -314,9 +315,9 @@ public final class PluralCraftOAuthClient
 		requestBody.addProperty("refresh_token", refreshToken);
 
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/refresh")
+						URI.create(config.getBaseURL() + "/api/pluralbuddy/oauth/refresh")
 				)
-				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.timeout(config.getRequestTimeout())
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
@@ -380,9 +381,9 @@ public final class PluralCraftOAuthClient
 		requestBody.addProperty("session_id", sessionId);
 
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(PluralCraftOAuthConfig.WEBSITE_BASE_URL + "/api/pluralbuddy/oauth/poll")
+						URI.create(config.getBaseURL() + "/api/pluralbuddy/oauth/poll")
 				)
-				.timeout(PluralCraftOAuthConfig.REQUEST_TIMEOUT)
+				.timeout(config.getRequestTimeout())
 				.header("Accept", "application/json")
 				.header("Content-Type", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))

@@ -22,7 +22,7 @@ public final class PluralBuddyApiClient
 	public PluralBuddyApiClient()
 	{
 		this(HttpClient.newBuilder()
-				.connectTimeout(PluralBuddyApiConfig.REQUEST_TIMEOUT)
+				.connectTimeout(new PluralBuddyApiConfig().getRequestTimeout())
 				.build());
 	}
 
@@ -144,14 +144,15 @@ public final class PluralBuddyApiClient
 			List<Alter> alters
 	)
 	{
+		PluralBuddyApiConfig config = new PluralBuddyApiConfig();
 		String path = "/v1/users/@me/system/list-alters?max="
-				+ PluralBuddyApiConfig.ALTER_PAGE_SIZE + "&skip=" + skip;
+				+ config.getAlterPageSize() + "&skip=" + skip;
 
 		return get(path, accessToken).thenCompose(response -> {
 			List<Alter> page = parseAlters(response);
 			alters.addAll(page);
 
-			if (page.size() < PluralBuddyApiConfig.ALTER_PAGE_SIZE)
+			if (page.size() < config.getAlterPageSize())
 			{
 				return CompletableFuture.completedFuture(List.copyOf(alters));
 			}
@@ -169,10 +170,12 @@ public final class PluralBuddyApiClient
 			);
 		}
 
+		PluralBuddyApiConfig config = new PluralBuddyApiConfig();
+
 		HttpRequest request = HttpRequest.newBuilder(
-						URI.create(PluralBuddyApiConfig.API_BASE_URL + path)
+						URI.create(config.getApiBaseUrl() + path)
 				)
-				.timeout(PluralBuddyApiConfig.REQUEST_TIMEOUT)
+				.timeout(config.getRequestTimeout())
 				.header("Accept", "application/json")
 				.header("Authorization", "Bearer " + accessToken)
 				.GET()
