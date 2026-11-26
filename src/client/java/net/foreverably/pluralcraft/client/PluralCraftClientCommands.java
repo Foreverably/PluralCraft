@@ -16,6 +16,7 @@ import java.util.List;
 final class PluralCraftClientCommands
 {
 
+
 	private PluralCraftClientCommands()
 	{
 	}
@@ -26,12 +27,12 @@ final class PluralCraftClientCommands
 				dispatcher.register(ClientCommands.literal("pluralcraft")
 						.then(ClientCommands.literal("link")
 								.executes(context -> {
-									PluralCraftClientLink.startLinking(context.getSource());
+									ClientLink.startLinking(context.getSource());
 									return 1;
 								})
 								.then(ClientCommands.literal("oauth")
 										.executes(context -> {
-											PluralCraftClientLink.startOAuthLinking(context.getSource());
+											ClientLink.startOAuthLinking(context.getSource());
 											return 1;
 										})))
 						.then(ClientCommands.literal("status")
@@ -41,12 +42,12 @@ final class PluralCraftClientCommands
 								}))
 						.then(ClientCommands.literal("alters")
 								.executes(context -> {
-									PluralCraftClientProxy.showAlters(context.getSource());
+									ClientProxy.showAlters(context.getSource());
 									return 1;
 								}))
 						.then(ClientCommands.literal("ap")
 								.executes(context -> {
-									PluralCraftClientProxy.showAutoproxy(context.getSource());
+									ClientProxy.showAutoproxy(context.getSource());
 									return 1;
 								}))
 						.then(ClientCommands.literal("unlink")
@@ -56,7 +57,7 @@ final class PluralCraftClientCommands
 								}))
 						.then(ClientCommands.literal("refresh")
 								.executes(context -> {
-									PluralCraftClientLink.refreshLink(context.getSource());
+									ClientLink.refreshLink(context.getSource());
 									return 1;
 								}))
 				)
@@ -65,8 +66,8 @@ final class PluralCraftClientCommands
 
 	private static void sendStatus(FabricClientCommandSource source)
 	{
-		PluralCraftOAuthClient.Tokens tokens = PluralCraftClient.sessionTokens;
-		PluralBuddyApiClient.Alter active = PluralCraftClientProxy.activeAlter();
+		PluralCraftOAuthClient.Tokens tokens = Client.sessionTokens;
+		PluralBuddyApiClient.Alter active = ClientProxy.activeAlter();
 
 		if (tokens == null)
 		{
@@ -103,14 +104,14 @@ final class PluralCraftClientCommands
 
 	private static void unlink(FabricClientCommandSource source)
 	{
-		PluralCraftClient.sessionTokens = null;
-		PluralCraftClient.linkedAlters = List.of();
-		PluralCraftClient.linkedAutoproxy = List.of();
-		PluralCraftClient.latchedAlterId = null;
-		PluralCraftClient.accessExpiresAtMillis = 0;
+		Client.sessionTokens = null;
+		Client.linkedAlters = List.of();
+		Client.linkedAutoproxy = List.of();
+		Client.latchedAlterId = null;
+		Client.accessExpiresAtMillis = 0;
 
-		boolean storageCleared = PluralCraftClientLink.deletePersistedLink();
-		PluralCraftClient.sendPresence(null);
+		boolean storageCleared = ClientLink.deletePersistedLink();
+		Client.sendPresence(null);
 
 		Component message = Component.literal("PluralCraft ")
 				.withStyle(ChatFormatting.DARK_AQUA)
