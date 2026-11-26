@@ -9,17 +9,19 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-final class PluralCraftCredentialStore
+final class CredentialStore
 {
 
-	private PluralCraftCredentialStore()
+	private static final PluralCraftCredentialStoreConfig CONFIG = new PluralCraftCredentialStoreConfig();
+
+	private CredentialStore()
 	{
 	}
 
 	static String readRefreshToken() throws CredentialStoreException
 	{
 		return withKeyring(keyring -> keyring.getPassword(
-				PluralCraftCredentialStoreConfig.SERVICE,
+				CONFIG.getServiceName(),
 				account()
 		));
 	}
@@ -27,7 +29,7 @@ final class PluralCraftCredentialStore
 	static void saveRefreshToken(String refreshToken) throws CredentialStoreException
 	{
 		withKeyring(keyring -> {
-			keyring.setPassword(PluralCraftCredentialStoreConfig.SERVICE, account(), refreshToken);
+			keyring.setPassword(CONFIG.getServiceName(), account(), refreshToken);
 			return null;
 		});
 	}
@@ -35,7 +37,7 @@ final class PluralCraftCredentialStore
 	static void deleteRefreshToken() throws CredentialStoreException
 	{
 		withKeyring(keyring -> {
-			keyring.deletePassword(PluralCraftCredentialStoreConfig.SERVICE, account());
+			keyring.deletePassword(CONFIG.getServiceName(), account());
 			return null;
 		});
 	}
@@ -50,7 +52,7 @@ final class PluralCraftCredentialStore
 		{
 			byte[] digest = MessageDigest.getInstance("SHA-256")
 					.digest(configPath.getBytes(StandardCharsets.UTF_8));
-			return PluralCraftCredentialStoreConfig.ACCOUNT
+			return CONFIG.getAccountName()
 					+ " " + HexFormat.of().formatHex(digest);
 		}
 		catch (NoSuchAlgorithmException exception)
