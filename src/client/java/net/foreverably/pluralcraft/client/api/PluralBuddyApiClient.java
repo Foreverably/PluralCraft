@@ -36,6 +36,7 @@ public final class PluralBuddyApiClient
 		JsonObject root = requireObject(response, "system response");
 		JsonObject data = requireObject(root.get("data"), "system response data");
 		JsonArray autoproxyEntries = requireArray(data.get("systemAutoproxy"), "systemAutoproxy");
+
 		List<Autoproxy> autoproxy = new ArrayList<>(autoproxyEntries.size());
 
 		for (JsonElement entry : autoproxyEntries)

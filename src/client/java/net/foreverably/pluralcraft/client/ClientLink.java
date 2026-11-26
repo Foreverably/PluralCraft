@@ -338,6 +338,7 @@ final class ClientLink
 	{
 		ClientLinkPersistence.PersistedLink persistedLink =
 				ClientLinkPersistence.load();
+
 		if (persistedLink == null)
 		{
 			return;

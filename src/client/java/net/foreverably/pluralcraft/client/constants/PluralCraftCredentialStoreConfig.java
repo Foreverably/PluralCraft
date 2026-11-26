@@ -26,3 +26,4 @@ public final class PluralCraftCredentialStoreConfig
 		return ACCOUNT;
 	}
 }
+ 

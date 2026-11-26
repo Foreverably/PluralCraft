@@ -21,7 +21,7 @@ public final class PluralBuddyApiConfig
 	public PluralBuddyApiConfig()
 	{
 	}
-
+ 
 	public String getApiBaseUrl()
 	{
 		return API_BASE_URL;
