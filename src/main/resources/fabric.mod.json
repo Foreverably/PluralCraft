@@ -1,30 +1,30 @@
 {
-	"schemaVersion": 1,
-	"id": "pluralcraft",
-	"version": "${version}",
-	"name": "PluralCraft",
-	"description": "A Minecraft mod for representing who's fronting through PluralBuddy.",
-	"authors": [
-		"Forwynn"
-	],
-	"contact": {
-		"homepage": "https://github.com/Foreverably/PluralCraft",
-		"sources": "https://github.com/Foreverably/PluralCraft"
-	},
-	"license": "GPL-3.0-or-later",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"net.foreverably.pluralcraft.PluralCraft"
-		],
-		"client": [
-			"net.foreverably.pluralcraft.client.PluralCraftClient"
-		]
-	},
-	"depends": {
-		"fabricloader": ">=0.20.1",
-		"minecraft": "~26.3",
-		"java": ">=25",
-		"fabric-api": "*"
-	}
+  "schemaVersion": 1,
+  "id": "pluralcraft",
+  "version": "${version}",
+  "name": "PluralCraft",
+  "description": "A Minecraft mod for representing who's fronting through PluralBuddy.",
+  "authors": [
+    "Forwynn"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Foreverably/PluralCraft",
+    "sources": "https://github.com/Foreverably/PluralCraft"
+  },
+  "license": "GPL-3.0-or-later",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.foreverably.pluralcraft.PluralCraft"
+    ],
+    "client": [
+      "net.foreverably.pluralcraft.client.Client"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
 }
