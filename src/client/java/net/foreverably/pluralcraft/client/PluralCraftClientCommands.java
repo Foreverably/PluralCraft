@@ -5,8 +5,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.foreverably.pluralcraft.client.api.PluralBuddyApiClient;
 import net.foreverably.pluralcraft.client.api.PluralCraftOAuthClient;
+import net.foreverably.pluralcraft.client.api.pluralbuddy.PluralBuddyApiClient;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 

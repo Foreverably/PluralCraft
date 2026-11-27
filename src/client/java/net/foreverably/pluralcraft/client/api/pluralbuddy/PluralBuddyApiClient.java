@@ -1,4 +1,4 @@
-package net.foreverably.pluralcraft.client.api;
+package net.foreverably.pluralcraft.client.api.pluralbuddy;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

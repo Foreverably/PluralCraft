@@ -4,8 +4,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.foreverably.pluralcraft.ClientPresencePayload;
-import net.foreverably.pluralcraft.client.api.PluralBuddyApiClient;
 import net.foreverably.pluralcraft.client.api.PluralCraftOAuthClient;
+import net.foreverably.pluralcraft.client.api.pluralbuddy.PluralBuddyApiClient;
 import net.minecraft.client.Minecraft;
 
 import java.util.List;

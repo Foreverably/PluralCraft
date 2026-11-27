@@ -3,7 +3,7 @@ package net.foreverably.pluralcraft.client.api;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.foreverably.pluralcraft.client.api.PluralBuddyApiClient.ApiException;
+import net.foreverably.pluralcraft.client.api.pluralbuddy.PluralBuddyApiClient.ApiException;
 import net.foreverably.pluralcraft.client.constants.PluralCraftOAuthConfig;
 
 import java.io.IOException;

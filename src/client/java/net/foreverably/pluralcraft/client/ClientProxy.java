@@ -4,7 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.foreverably.pluralcraft.ClientPresencePayload;
-import net.foreverably.pluralcraft.client.api.PluralBuddyApiClient;
+import net.foreverably.pluralcraft.client.api.pluralbuddy.PluralBuddyApiClient;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
